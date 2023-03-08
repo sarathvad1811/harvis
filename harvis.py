@@ -13,26 +13,30 @@ messages = [{"role": "system", "content": 'ENTER_YOUR_CONTEXT_HERE'}]
 
 
 def transcribe(audio):
-    global messages
+    try:
+        global messages
 
-    audio_file = open(audio, "rb")
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+        audio_file = open(audio, "rb")
+        transcript = openai.Audio.transcribe("whisper-1", audio_file)
 
-    messages.append({"role": "user", "content": transcript["text"]})
+        messages.append({"role": "user", "content": transcript["text"]})
 
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
 
-    system_message = response["choices"][0]["message"]
-    messages.append(system_message)
+        system_message = response["choices"][0]["message"]
+        messages.append(system_message)
 
-    subprocess.call(["say", system_message['content']])
+        subprocess.call(["say", system_message['content']], shell=True)
 
-    chat_transcript = ""
-    for message in messages:
-        if message['role'] != 'system':
-            chat_transcript += message['role'] + ": " + message['content'] + "\n\n"
+        chat_transcript = ""
+        for message in messages:
+            if message['role'] != 'system':
+                chat_transcript += message['role'] + ": " + message['content'] + "\n\n"
 
-    return chat_transcript
+        return chat_transcript
+    
+    except Exception as e:
+        print("Got an exception", e)
 
-ui = gr.Interface(fn=transcribe, inputs=gr.Audio(source="microphone", type="filepath"), outputs="text").launch()
+ui = gr.Interface(fn=transcribe, inputs=[gr.Audio(source="microphone", type="filepath")], outputs="text").launch()
 ui.launch()
