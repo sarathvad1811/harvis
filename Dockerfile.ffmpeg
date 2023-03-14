@@ -1,0 +1,11 @@
+# Use the official FFmpeg image as the base image
+FROM jrottenberg/ffmpeg:latest
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the rest of the application code to the container
+COPY . .
+
+# Set the default command to run when the container starts
+CMD ["ffmpeg", "-h"]
